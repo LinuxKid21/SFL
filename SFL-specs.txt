@@ -1,0 +1,50 @@
+The language will feature the following (do in order!):
+
+1. Basic syntax (Parsing)
+    <Program> ::= <Statement>*
+    <Statement> ::= <Assignment>|<Expression>|<BlockStatement>
+    <Assignment> ::= <Identifier> "=" <Expression> ";"
+    <Expression> ::= <Term>|<Expr> "**" <Term>
+    <Expression> ::= <Term>|<Expr>("*"|"/")<Term>
+    <Expression> ::= <Term>|<Expr>("+"|"-")<Term>
+    <Term> ::= <FunctionCall>
+    <Term> ::= <Identifer>
+    <Term> ::= <Number>
+    <Term> ::= <String>
+    <FunctionCall> ::= <Identifer> "(" <ExpressionList> ")"
+    <Identifer> ::= [a-ZA-Z_!?]+
+    <BlockStatement> ::= <IfStatement>|<WhileStatement>
+    <IfStatement> ::= "if" <Expression> <Block>
+    <WhileStatement> ::= "while" <Expression> <Block>
+    <Block> ::= "begin" <Program> "end"
+    
+    List variants
+    <SomethingList> ::= <Nothing>
+    <SomethingList> ::= <SomethingListN>
+    <SomethingListN> ::= <Something> "," <SomethingListN>
+    <SomethingListN> ::= <Something>
+
+2. Interpreted with a simple tree walk
+    from file
+    from command line
+
+3. Add in functions
+    <FunctionStatement> ::= "function" <Identifier> "(" <IdentifierList> ")" <Block>
+
+4. Ability to bind to C functions
+    Something like:
+    dll_import("my.dll") # or "my.so"
+    dll_bind("cFunction")
+    cFunction("foo" 123 someCalulation())
+
+5. Classes
+    TODO
+
+?. Compile to binary?
+?. Compile to C library? (requires adding C type hints of course)
+
+
+Note:
+    * Adding ! to a function name means it mutates data (when there are classes + also globals when there are functions)
+    * I guess adding ! to var name should be illegal.
+    * The ? has no special meaning, but the inbuild "?" function gets the documentation for a particular thing.
