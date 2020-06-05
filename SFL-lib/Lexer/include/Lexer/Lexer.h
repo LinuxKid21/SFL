@@ -11,6 +11,14 @@ struct Lexeme
     int lineNumber;
     int colPosition;
 
+    enum class Type
+    {
+        Number,
+        Identifier,
+        Operator,
+        String
+    } type;
+
     friend std::ostream& operator<<(std::ostream& os, const Lexeme& bar) {
         return os << "{" << bar.name << ", " << bar.lineNumber << ", " << bar.colPosition << "}";
     }

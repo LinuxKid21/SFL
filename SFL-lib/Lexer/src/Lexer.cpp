@@ -11,7 +11,7 @@ public:
     typedef std::string::const_iterator iter;
     LexemeImpl(iter _start, iter _end)
     {
-        start = _start;
+        current = _start;
         end = _end;
 
         skipWhitespace();
@@ -19,63 +19,113 @@ public:
         {
             int wordLine = line;
             int wordCol = col;
+            try
+            {
+                getNext();
+            }
+            catch(const std::exception& e)
+            {
+                // append location information to all errors
+                throw LexerError(e.what(), line, col);
+            }
+            
+        }
+    }
 
-            char c = peek();
-            if(isWordChar(c))
-            {
-                lexemes.push_back(Lexeme{getWord(), wordLine, wordCol});
-            }
-            else if(isToken(c))
-            {
-                advance(); // eat the token
+    void getNext()
+    {
+        int wordLine = line;
+        int wordCol = col;
 
-                if(c == '*' && peek() == '*')
-                {
-                    advance();
-                    lexemes.push_back(Lexeme{"**", wordLine, wordCol});
-                }
-                else if(c == '=' && peek() == '=')
-                {
-                    advance();
-                    lexemes.push_back(Lexeme{"==", wordLine, wordCol});
-                }
-                else
-                {
-                    lexemes.push_back(Lexeme{std::string(1, c), wordLine, wordCol});
-                }
-            }
-            else if(c == '"')
+        char c = peek();
+        if(isWordChar(c) && !isdigit(c))
+        {
+            lexemes.push_back(Lexeme{getWord(), wordLine, wordCol, Lexeme::Type::Identifier});
+        }
+        else if(isdigit(c) || c == '.')
+        {
+            lexemes.push_back(Lexeme{getNumber(), wordLine, wordCol, Lexeme::Type::Number});
+        }
+        else if(isToken(c))
+        {
+            advance(); // eat the token
+
+            std::string tokenString;
+            if(c == '*' && peek() == '*')
             {
-                lexemes.push_back(Lexeme{getString(), wordLine, wordCol});
+                advance();
+                tokenString = "**";
             }
-            else if(c == '#')
+            else if(c == '=' && peek() == '=')
             {
-                eatComment();
+                advance();
+                tokenString = "==";
             }
             else
             {
-                throw LexerError("Unexpected token", wordLine, wordCol);
+                tokenString = std::string(1, c);
             }
-            
-            skipWhitespace();
+            lexemes.push_back(Lexeme{tokenString, wordLine, wordCol, Lexeme::Type::Operator});
         }
+        else if(c == '"')
+        {
+            lexemes.push_back(Lexeme{getString(), wordLine, wordCol, Lexeme::Type::String});
+        }
+        else if(c == '#')
+        {
+            // TODO: turn the comment into a token so we can associate documentation with things
+            eatComment();
+        }
+        else
+        {
+            throw LexerError("Unexpected token");
+        }
+        
+        skipWhitespace();
     }
 
     bool isWordChar(char c) const
     {
-        return isalnum(c) || c == '_' || c == '?' || c == '!' || c == '.';
+        return isalnum(c) || c == '_' || c == '?' || c == '!';
     }
 
-    // split into getWord and getNumber
-    // figure out '.' ambiguity (operator + decimal)
     std::string getWord()
     {
-        iter wordStart = start;
+        iter wordStart = current;
         while(isWordChar(peek()))
         {
             advance();
         }
-        return std::string(wordStart, start);
+        return std::string(wordStart, current);
+    }
+
+    std::string getNumber()
+    {
+        iter wordStart = current;
+        bool foundDecimal = false;
+        while(isdigit(peek()) || peek() == '.')
+        {
+            if(peek() == '.')
+            {
+                if(foundDecimal)
+                {
+                    throw LexerError("Two decimals in one number");
+                }
+                else
+                {
+                    foundDecimal = true;
+                }
+            }
+            advance();
+        }
+
+        // the case where there is just the decimal
+        if(foundDecimal && std::distance(wordStart, current) == 1)
+        {
+            throw LexerError("Unexpected token");
+        }
+
+        return std::string(wordStart, current);
     }
 
     std::string getString()
@@ -135,15 +185,15 @@ public:
     char peek() const
     {
         if(isDone()) return '\0';
-        return *start;
+        return *current;
     }
 
     char advance()
     {
         if(isDone()) return '\0';
 
-        char t = *start;
-        start++;
+        char t = *current;
+        current++;
         if(t == '\n')
         {
             line += 1;
@@ -158,23 +208,24 @@ public:
 
     bool isDone() const
     {
-        return start == end;
+        return current == end;
     }
 
     bool isToken(char token) const
     {
         return token == '+' || token == '-' || token == '*' || token == '/' || token == '(' ||
-            token == ')' || token == '=' || token == ';' || token == ':' || token == ',';
+            token == ')' || token == '=' || token == ';' || token == ':' || token == ',' || token == '.';
     }
 
     int line = 1;
     int col = 1;
 
-    iter start;
+    iter current;
     iter end;
 
     LexemeList lexemes;
 };
+
 
 // ----- public functions -----
 
