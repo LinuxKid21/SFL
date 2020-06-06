@@ -67,14 +67,14 @@ TEST(Lexer, singleNumeric)
 
 TEST(Lexer, singleOperator)
 {
-    testSingleChar('(', Lexeme::Type::Operator);
-    testSingleChar(')', Lexeme::Type::Operator);
-    testSingleChar(',', Lexeme::Type::Operator);
-    testSingleChar('+', Lexeme::Type::Operator);
-    testSingleChar('-', Lexeme::Type::Operator);
-    testSingleChar('*', Lexeme::Type::Operator);
-    testSingleChar('/', Lexeme::Type::Operator);
-    testSingleChar(';', Lexeme::Type::Operator);
+    testSingleChar('(', Lexeme::Type::LParentheses);
+    testSingleChar(')', Lexeme::Type::RParentheses);
+    testSingleChar(',', Lexeme::Type::Comma);
+    testSingleChar('+', Lexeme::Type::Plus);
+    testSingleChar('-', Lexeme::Type::Minus);
+    testSingleChar('*', Lexeme::Type::Multiply);
+    testSingleChar('/', Lexeme::Type::Divide);
+    testSingleChar(';', Lexeme::Type::Semicolon);
 }
 
 // no longer test by category. We don't really care about that in the lexer

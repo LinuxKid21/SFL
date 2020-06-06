@@ -13,10 +13,37 @@ struct Lexeme
 
     enum class Type
     {
+        Error = -1,
+        Identifier = 0,
+
+        LiteralStart = 1000,
         Number,
-        Identifier,
-        Operator,
-        String
+        String,
+        LiteralEnd,
+
+        OperatorStart = 2000,
+        Plus,
+        Minus,
+        Multiply,
+        Divide,
+        Power,
+        LParentheses,
+        RParentheses,
+        Comma,
+        Assign,
+        Equality,
+        Semicolon,
+        Colon,
+        Period,
+        OperatorEnd,
+
+        KeywordStart = 3000,
+        KwFunction,
+        KwIf,
+        KwWhile,
+        KwBegin,
+        KwEnd,
+        KeywordEnd
     } type;
 
     friend std::ostream& operator<<(std::ostream& os, const Lexeme& bar) {

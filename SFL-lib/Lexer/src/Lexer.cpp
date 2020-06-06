@@ -1,6 +1,7 @@
 #include <Lexer/Lexer.h>
 #include <fstream>
 #include <sstream>
+#include <map>
 #include <ctype.h> // isalpha, isspace, etc...
 
 // ----- implementation functions -----
@@ -32,6 +33,31 @@ public:
         }
     }
 
+    const std::map<std::string, Lexeme::Type> charToKeyword =
+    {
+        {"function",        Lexeme::Type::KwFunction},
+        {"if",              Lexeme::Type::KwIf},
+        {"while",           Lexeme::Type::KwWhile},
+        {"begin",           Lexeme::Type::KwBegin},
+        {"end",             Lexeme::Type::KwEnd},
+    };
+
+    // only includes single-char operators. Others are handled as special cases
+    const std::map<char, Lexeme::Type> charToOperator =
+    {
+        {'+', Lexeme::Type::Plus},
+        {'-', Lexeme::Type::Minus},
+        {'*', Lexeme::Type::Multiply},
+        {'/', Lexeme::Type::Divide},
+        {'(', Lexeme::Type::LParentheses},
+        {')', Lexeme::Type::RParentheses},
+        {'=', Lexeme::Type::Assign},
+        {';', Lexeme::Type::Semicolon},
+        {':', Lexeme::Type::Colon},
+        {',', Lexeme::Type::Comma},
+        {'.', Lexeme::Type::Period},
+    };
+
     void getNext()
     {
         int wordLine = line;
@@ -40,32 +66,38 @@ public:
         char c = peek();
         if(isWordChar(c) && !isdigit(c))
         {
-            lexemes.push_back(Lexeme{getWord(), wordLine, wordCol, Lexeme::Type::Identifier});
+            std::string word = getWord();
+            Lexeme::Type type = Lexeme::Type::Identifier;
+            if(charToKeyword.count(word) == 1)
+            {
+                type = charToKeyword.at(word);
+            }
+
+            lexemes.push_back(Lexeme{word, wordLine, wordCol, type});
         }
         else if(isdigit(c) || c == '.')
         {
             lexemes.push_back(Lexeme{getNumber(), wordLine, wordCol, Lexeme::Type::Number});
         }
-        else if(isToken(c))
+        else if(charToOperator.count(c) == 1)
         {
             advance(); // eat the token
-
-            std::string tokenString;
+            
             if(c == '*' && peek() == '*')
             {
                 advance();
-                tokenString = "**";
+                lexemes.push_back(Lexeme{"**", wordLine, wordCol, Lexeme::Type::Power});
             }
             else if(c == '=' && peek() == '=')
             {
                 advance();
-                tokenString = "==";
+                lexemes.push_back(Lexeme{"==", wordLine, wordCol, Lexeme::Type::Equality});
             }
             else
             {
-                tokenString = std::string(1, c);
+                auto type = charToOperator.at(c);
+                lexemes.push_back(Lexeme{std::string(1, c), wordLine, wordCol, type});
             }
-            lexemes.push_back(Lexeme{tokenString, wordLine, wordCol, Lexeme::Type::Operator});
         }
         else if(c == '"')
         {
@@ -209,12 +241,6 @@ public:
     bool isDone() const
     {
         return current == end;
-    }
-
-    bool isToken(char token) const
-    {
-        return token == '+' || token == '-' || token == '*' || token == '/' || token == '(' ||
-            token == ')' || token == '=' || token == ';' || token == ':' || token == ',' || token == '.';
     }
 
     int line = 1;
