@@ -175,11 +175,11 @@ TEST(Lexer, examples)
         LexemeEqNamePos("b", 1, 17), LexemeEqNamePos(")", 1, 18), LexemeEqNamePos("begin", 1, 20), LexemeEqNamePos("return", 1, 26), LexemeEqNamePos("a", 1, 33),
         LexemeEqNamePos("+", 1, 34), LexemeEqNamePos("b", 1, 35), LexemeEqNamePos(";", 1, 36), LexemeEqNamePos("end", 1, 38)));
 
-    ASSERT_THAT(Lexer::lexString("a=1**2;"), 
-        ElementsAre(LexemeEqNamePos("a", 1, 1), LexemeEqNamePos("=", 1, 2), LexemeEqNamePos("1", 1, 3), LexemeEqNamePos("**", 1, 4), LexemeEqNamePos("2", 1, 6), LexemeEqNamePos(";", 1, 7)));
+    ASSERT_THAT(Lexer::lexString("a=1==2;"), 
+        ElementsAre(LexemeEqNamePos("a", 1, 1), LexemeEqNamePos("=", 1, 2), LexemeEqNamePos("1", 1, 3), LexemeEqNamePos("==", 1, 4), LexemeEqNamePos("2", 1, 6), LexemeEqNamePos(";", 1, 7)));
 
-    ASSERT_THAT(Lexer::lexString("a=1* *2;"), 
-        ElementsAre(LexemeEqNamePos("a", 1, 1), LexemeEqNamePos("=", 1, 2), LexemeEqNamePos("1", 1, 3), LexemeEqNamePos("*", 1, 4), LexemeEqNamePos("*", 1, 6), LexemeEqNamePos("2", 1, 7), LexemeEqNamePos(";", 1, 8)));
+    ASSERT_THAT(Lexer::lexString("a=1= =2;"), 
+        ElementsAre(LexemeEqNamePos("a", 1, 1), LexemeEqNamePos("=", 1, 2), LexemeEqNamePos("1", 1, 3), LexemeEqNamePos("=", 1, 4), LexemeEqNamePos("=", 1, 6), LexemeEqNamePos("2", 1, 7), LexemeEqNamePos(";", 1, 8)));
 }
 
 TEST(Lexer, multiline)

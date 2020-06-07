@@ -3,14 +3,17 @@
 #include <Lexer/Lexer.h>
 #include <string>
 #include <vector>
+#include <memory>
 
 class AST
 {
 public:
     struct Node
     {
+        std::string stringTree() const;
+
         Lexeme lexeme;
-        std::vector<Node *> children;
+        std::vector<std::unique_ptr<AST::Node> > children;
     };
     
     AST(const LexemeList &lexemes);
@@ -19,7 +22,7 @@ public:
     const Node *getRoot() const;
 
 private:
-    Node root;
+    std::unique_ptr<Node> root;
 };
 
 class ParserError : public std::runtime_error

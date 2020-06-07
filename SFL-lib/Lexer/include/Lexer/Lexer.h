@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <limits>
 
 #include <iostream> // for the << operator (TODO: move me)
 
@@ -11,7 +12,7 @@ struct Lexeme
     int lineNumber;
     int colPosition;
 
-    enum class Type
+    enum class Type : int
     {
         Error = -1,
         Identifier = 0,
@@ -26,7 +27,6 @@ struct Lexeme
         Minus,
         Multiply,
         Divide,
-        Power,
         LParentheses,
         RParentheses,
         Comma,
@@ -43,7 +43,9 @@ struct Lexeme
         KwWhile,
         KwBegin,
         KwEnd,
-        KeywordEnd
+        KeywordEnd,
+
+        EndOfFile = std::numeric_limits<int>::max()
     } type;
 
     friend std::ostream& operator<<(std::ostream& os, const Lexeme& bar) {

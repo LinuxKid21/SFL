@@ -12,6 +12,12 @@ set(SOURCES
 )
 
 add_library(SFL-lib ${SOURCES})
+
+target_link_libraries(SFL-lib
+    PRIVATE Parser
+    PRIVATE Lexer
+)
+
 target_include_directories(SFL-lib 
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )

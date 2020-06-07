@@ -83,12 +83,7 @@ public:
         {
             advance(); // eat the token
             
-            if(c == '*' && peek() == '*')
-            {
-                advance();
-                lexemes.push_back(Lexeme{"**", wordLine, wordCol, Lexeme::Type::Power});
-            }
-            else if(c == '=' && peek() == '=')
+            if(c == '=' && peek() == '=')
             {
                 advance();
                 lexemes.push_back(Lexeme{"==", wordLine, wordCol, Lexeme::Type::Equality});
