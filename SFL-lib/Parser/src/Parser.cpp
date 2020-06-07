@@ -1,10 +1,11 @@
 #include <Parser/Parser.h>
 #include <optional>
 
-std::unique_ptr<AST::Node> makeNode(Lexeme lexeme = {}, std::vector<std::unique_ptr<AST::Node> > children = {})
+std::unique_ptr<AST::Node> makeNode(Lexeme lexeme, AST::Node::Type type, AST::NodeList children = {})
 {
     auto node = std::make_unique<AST::Node>();
     node->lexeme = lexeme;
+    node->type = type;
     node->children = std::move(children);
 
     return node;
@@ -26,7 +27,7 @@ public:
         current = _start;
         end = _end;
 
-        root = makeNode(Lexeme{"", -1, -1, Lexeme::Type::KeywordStart}, program());
+        root = makeNode(Lexeme{"", 1, 1, Lexeme::Type::KwBegin}, AST::Node::Type::Block, program());
         if(peek() == Lexeme::Type::KwEnd)
         {
             // special case where the program() function ended seeing the 'end' keyword
@@ -34,10 +35,10 @@ public:
         }
     }
 
-    std::vector<std::unique_ptr<AST::Node> > program()
+    AST::NodeList program()
     {
         ParseLog("program");
-        std::vector<std::unique_ptr<AST::Node> > statements;
+        AST::NodeList statements;
         while(peek() != Lexeme::Type::KwEnd && peek() != Lexeme::Type::EndOfFile)
         {
             statements.push_back(statement());
@@ -78,10 +79,10 @@ public:
         auto ifLexeme = expect(Lexeme::Type::KwIf);
         auto expressionNode = expression();
         auto blockNode = block();
-        std::vector<std::unique_ptr<AST::Node> > children;
+        AST::NodeList children;
         children.push_back(std::move(expressionNode));
         children.push_back(std::move(blockNode));
-        return makeNode(*ifLexeme, std::move(children));
+        return makeNode(*ifLexeme, AST::Node::Type::If, std::move(children));
     }
 
     std::unique_ptr<AST::Node> whileStatement()
@@ -90,10 +91,10 @@ public:
         auto whileLexeme = expect(Lexeme::Type::KwWhile);
         auto expressionNode = expression();
         auto blockNode = block();
-        std::vector<std::unique_ptr<AST::Node> > children;
+        AST::NodeList children;
         children.push_back(std::move(expressionNode));
         children.push_back(std::move(blockNode));
-        return makeNode(*whileLexeme, std::move(children));
+        return makeNode(*whileLexeme, AST::Node::Type::While, std::move(children));
     }
 
     std::unique_ptr<AST::Node> block()
@@ -102,7 +103,7 @@ public:
         auto startNode = expect(Lexeme::Type::KwBegin);
         auto statements = program();
         expect(Lexeme::Type::KwEnd);
-        return makeNode(*startNode, std::move(statements));
+        return makeNode(*startNode, AST::Node::Type::Block, std::move(statements));
     }
 
 
@@ -113,10 +114,10 @@ public:
         auto assign = expect(Lexeme::Type::Assign);
         auto expressionNode = expression();
         expect(Lexeme::Type::Semicolon);
-        std::vector<std::unique_ptr<AST::Node> > children;
-        children.push_back(makeNode(*identifier));
+        AST::NodeList children;
+        children.push_back(makeNode(*identifier, AST::Node::Type::Variable));
         children.push_back(std::move(expressionNode));
-        return makeNode(*assign, std::move(children));
+        return makeNode(*assign, AST::Node::Type::Assign, std::move(children));
     }
 
 
@@ -129,10 +130,11 @@ public:
             auto lhsTermNode = std::move(rootNode);
             auto operatorLexeme = advance();
             auto rhsTermNode = term();
-            std::vector<std::unique_ptr<AST::Node> > children;
+            AST::NodeList children;
             children.push_back(std::move(lhsTermNode));
             children.push_back(std::move(rhsTermNode));
-            rootNode = makeNode(operatorLexeme, std::move(children));
+            auto parserType = (operatorLexeme.type == Lexeme::Type::Plus) ? AST::Node::Type::Add : AST::Node::Type::Subtract;
+            rootNode = makeNode(operatorLexeme, parserType, std::move(children));
         }
 
         return rootNode;
@@ -147,10 +149,11 @@ public:
             auto lhsFactorNode = std::move(rootNode);
             auto operatorLexeme = advance();
             auto rhsFactorNode = factor();
-            std::vector<std::unique_ptr<AST::Node> > children;
+            AST::NodeList children;
             children.push_back(std::move(lhsFactorNode));
             children.push_back(std::move(rhsFactorNode));
-            rootNode = makeNode(operatorLexeme, std::move(children));
+            auto parserType = (operatorLexeme.type == Lexeme::Type::Multiply) ? AST::Node::Type::Multiply : AST::Node::Type::Divide;
+            rootNode = makeNode(operatorLexeme, parserType, std::move(children));
         }
 
         return rootNode;
@@ -165,10 +168,10 @@ public:
             auto lhsBooleanTermNode = std::move(rootNode);
             auto operatorLexeme = advance();
             auto rhsBooleanTermNode = booleanTerm();
-            std::vector<std::unique_ptr<AST::Node> > children;
+            AST::NodeList children;
             children.push_back(std::move(lhsBooleanTermNode));
             children.push_back(std::move(rhsBooleanTermNode));
-            rootNode = makeNode(operatorLexeme, std::move(children));
+            rootNode = makeNode(operatorLexeme, AST::Node::Type::Equals, std::move(children));
         }
 
         return rootNode;
@@ -189,16 +192,16 @@ public:
             }
             else
             {
-                return makeNode(*expect(Lexeme::Type::Identifier));
+                return makeNode(*expect(Lexeme::Type::Identifier), AST::Node::Type::Variable);
             }
         }
         else if(peek() == Lexeme::Type::Number)
         {
-            return makeNode(*expect(Lexeme::Type::Number));
+            return makeNode(*expect(Lexeme::Type::Number), AST::Node::Type::Number);
         }
         else if(peek() == Lexeme::Type::String)
         {
-            return makeNode(*expect(Lexeme::Type::String));
+            return makeNode(*expect(Lexeme::Type::String), AST::Node::Type::String);
         }
         else
         {
@@ -237,7 +240,7 @@ public:
         }
         expect(Lexeme::Type::RParentheses);
 
-        return makeNode(*functionNameLexeme, std::move(children));
+        return makeNode(*functionNameLexeme, AST::Node::Type::FunctionCall, std::move(children));
     }
 
 

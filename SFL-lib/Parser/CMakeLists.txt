@@ -16,4 +16,4 @@ target_link_libraries(Parser
     PUBLIC Lexer
 )
 
-#add_subdirectory(UnitTests)
+add_subdirectory(UnitTests)

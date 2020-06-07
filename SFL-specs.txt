@@ -6,7 +6,7 @@ The language will feature the following (do in order!):
     <Assignment> ::= <Identifier> "=" <Expression> ";"
     <Expression> ::= <Term> (("+" <Term>) | ("-" <Term>))*
     <Term> ::= <Factor> (("*" <Factor>) | ("/" <Factor>))*
-    <Factor> ::= <Factor> (("==" <BooleanTerm>) | ("<=" <BooleanTerm>) | (">=" <BooleanTerm>) | ("<" <BooleanTerm>) | (">" <BooleanTerm>))*
+    <Factor> ::= <Factor> (("==" <BooleanTerm>) | ("!=" <BooleanTerm>) | ("<=" <BooleanTerm>) | (">=" <BooleanTerm>) | ("<" <BooleanTerm>) | (">" <BooleanTerm>))*
     <BooleanTerm> ::= <Group>|<FunctionCall>|<Identifer>|<Number>|<String>
     <Group> ::= "(" <Expression> ")"
     <FunctionCall> ::= <Identifer> "(" <ExpressionList> ")"
