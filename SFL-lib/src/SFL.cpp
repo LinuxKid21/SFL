@@ -1,6 +1,7 @@
 #include <SFL/SFL.h>
 
 #include <Parser/Parser.h>
+#include <Interpreter/Interpreter.h>
 
 #include <string>
 #include <iostream>
@@ -21,7 +22,8 @@ void SFL::test()
         }
 
         AST ast(Lexer::lexString(program));
-        std::cout << ast.getRoot()->stringTree() << std::endl;
+        Interpreter().run(ast);
+        // std::cout << ast.getRoot()->stringTree() << std::endl;
     }
     catch(const ParserError& e)
     {

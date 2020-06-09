@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5.2)
 
 add_subdirectory(Lexer)
 add_subdirectory(Parser)
+add_subdirectory(Interpreter)
 
 project(SFL-lib)
 
@@ -14,6 +15,7 @@ set(SOURCES
 add_library(SFL-lib ${SOURCES})
 
 target_link_libraries(SFL-lib
+    PRIVATE Interpreter
     PRIVATE Parser
     PRIVATE Lexer
 )
